@@ -5,16 +5,16 @@ install_requires = [
     'requests>=2.18.1',
     'lxml==4.5.0',
     'raven==6.1.0',
-    'articlemetaapi==1.23.0',
+    'articlemetaapi==1.26.7',
     'accessstatsapi==1.2.0',
     'citedbyapi==1.8.0',
     'picles.plumber==0.10',
     'Sickle==0.6.5',
     'langcodes==1.4.1',
     'solrapi>=1.2.0',
-    'certifi',
-    'mongomock',
-    'pymongo'
+    'certifi==2020.12.5',
+    'mongomock==3.22.1',
+    'pymongo==3.11.3'
 ]
 
 tests_require = []
