@@ -90,9 +90,7 @@ def extract_citation_data(citation: Citation, cit_standardized_data=None):
     :param cit_standardized_data: Caso seja artigo, usa o padronizador de título de periódico
     :return: Dicionário composto pelos pares de nomes dos ampos limpos das citações e respectivos valores
     """
-    data = {}
-
-    data.update(_extract_citation_authors(citation))
+    data = _extract_citation_authors(citation)
 
     cleaned_publication_date = get_cleaned_publication_date(citation.publication_date)
     if cleaned_publication_date:
