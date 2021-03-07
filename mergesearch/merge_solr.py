@@ -67,7 +67,7 @@ class MergeSolr(object):
 
         return ids_for_merging
 
-    def merge_citation(self, primary_citation, others):
+    def _merge_citation_data(self, primary_citation, others):
         """
         Mescla dados de uma citação principal com dados de outras citações.
 
@@ -78,7 +78,7 @@ class MergeSolr(object):
 
         ids_for_removing = set()
 
-        for cit in others[1:]:
+        for cit in others:
             raw_cit = cit.copy()
 
             # Mescla informação de documentos citantes
