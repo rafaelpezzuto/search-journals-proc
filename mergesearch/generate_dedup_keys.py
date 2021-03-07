@@ -30,14 +30,9 @@ BOOK_KEYS = ['cleaned_publication_date',
              'cleaned_publisher',
              'cleaned_publisher_address']
 
+CITATION_TYPES = ('book', 'article')
+
 chunk_size = 2000
-
-citation_types = set()
-
-mongo_uri_scielo_search = ''
-
-mongo_uri_article_meta = ''
-
 
 def get_mongo_connection(mongo_uri, collection=None):
     """
