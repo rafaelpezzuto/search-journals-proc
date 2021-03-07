@@ -14,9 +14,10 @@ from utils.field_cleaner import get_cleaned_default, get_cleaned_publication_dat
 from xylose.scielodocument import Article, Citation
 
 
-DEDUPLICATED_CITATIONS_PREFIX = os.environ.get('DEDUPLICATED_CITATIONS_PREFIX', 'dedup_')
-
-COLLECTION_STANDARDIZED = os.environ.get('COLLECTION_STANDARDIZED', 'standardized')
+DEDUPLICATED_CITATIONS_PREFIX = os.environ.get('DEDUPLICATED_CITATIONS_PREFIX', 'gold_')
+MONGO_URI_ARTICLEMETA = os.environ.get('MONGO_URI_ARTICLEMETA', 'mongodb://127.0.0.1:27017/articlemeta.articles')
+MONGO_URI_STANDARDIZED = os.environ.get('MONGO_URI_STANDARDIZED', 'mongodb://127.0.0.1:27017/citations.standardized')
+MONGO_URI_CITATION_HASH = os.environ.get('MONGO_URI_CITATION_HASH', 'mongodb://127.0.0.1:27017/citations')
 
 ARTICLE_KEYS = ['cleaned_publication_date',
                 'cleaned_first_author',
