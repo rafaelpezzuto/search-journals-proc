@@ -97,8 +97,6 @@ def extract_citation_data(citation: Citation, cit_standardized_data=None):
         data['cleaned_publication_date'] = cleaned_publication_date
 
     if citation.publication_type == 'article':
-        data.update(_extract_citation_fields_by_list(citation, ['issue', 'start_page', 'volume']))
-
         cleaned_journal_title = ''
         if cit_standardized_data:
             cleaned_journal_title = cit_standardized_data['official-journal-title'][0].lower()
