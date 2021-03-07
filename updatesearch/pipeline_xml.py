@@ -3,7 +3,8 @@ import plumber
 
 from citedby import client
 from lxml import etree as ET
-from updatesearch.field_sanitizer import remove_accents, remove_period
+from utils.field_sanitizer import remove_accents, remove_period
+
 
 CITEDBY = client.ThriftClient(domain='citedby.scielo.org:11610')
 

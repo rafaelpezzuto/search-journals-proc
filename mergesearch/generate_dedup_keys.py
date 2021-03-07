@@ -3,12 +3,14 @@ import logging
 import os
 import textwrap
 import time
+import sys
+sys.path.append(os.getcwd())
 
-from datetime import datetime
-from hashlib import sha3_224
+from datetime import datetime, timedelta
 from multiprocessing import Pool
-from pymongo import MongoClient, UpdateOne, uri_parser
-from mergesearch.utils.field_cleaner import get_cleaned_default, get_cleaned_publication_date, get_cleaned_first_author_name, get_cleaned_journal_title
+from pymongo import UpdateOne
+from utils.database import get_mongo_connection
+from utils.field_cleaner import get_cleaned_default, get_cleaned_publication_date, get_cleaned_first_author_name, get_cleaned_journal_title
 from xylose.scielodocument import Article, Citation
 
 

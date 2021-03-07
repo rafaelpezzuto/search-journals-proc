@@ -1,21 +1,18 @@
 #!/usr/bin/python
 # coding: utf-8
 import os
-import sys
 import time
 import json
 import argparse
 import logging
 import logging.config
 import textwrap
-import itertools
-from datetime import datetime, timedelta
 
-from lxml import etree as ET
-from SolrAPI import Solr
-import plumber
 from articlemeta.client import ThriftClient as ArticleMetaThriftClient
 from citedby.client import ThriftClient as CitedbyThriftClient
+from lxml import etree as ET
+from SolrAPI import Solr
+
 
 logger = logging.getLogger(__name__)
 

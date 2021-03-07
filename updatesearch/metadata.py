@@ -3,20 +3,20 @@
 import argparse
 import json
 import logging
-import logging.config
 import os
 import plumber
 import textwrap
 import time
+import sys
+sys.path.append(os.getcwd())
 
-from articlemeta.client import ThriftClient
+from articlemeta.client import RestfulClient
 from copy import deepcopy
 from datetime import datetime, timedelta
 from lxml import etree as ET
 from SolrAPI import Solr
-from pymongo import MongoClient, uri_parser
 from updatesearch import pipeline_xml, citation_pipeline_xml
-from xylose.scielodocument import Article
+from utils.database import get_mongo_connection
 
 
 MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardized')

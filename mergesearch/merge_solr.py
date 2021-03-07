@@ -3,9 +3,11 @@ import logging
 import os
 import SolrAPI
 import textwrap
+import sys
+sys.path.append(os.getcwd())
 
 from datetime import datetime
-from pymongo import MongoClient, uri_parser
+from utils.database import get_mongo_connection
 
 SOLR_URL = os.environ.get('SOLR_URL', 'http://localhost:8983/solr/articles')
 SOLR_ROWS_LIMIT = os.environ.get('SOLR_ROWS_LIMIT', 10000)

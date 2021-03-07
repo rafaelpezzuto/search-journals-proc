@@ -1,9 +1,9 @@
 # coding: utf-8
+import plumber
+
 from lxml import etree as ET
 from pymongo import collection as MongoCollection
-from updatesearch.field_sanitizer import get_author_name_quality, get_date_quality, remove_period
-
-import plumber
+from utils.field_sanitizer import get_author_name_quality, get_date_quality, remove_period
 
 
 class AnalyticAuthors(plumber.Pipe):
