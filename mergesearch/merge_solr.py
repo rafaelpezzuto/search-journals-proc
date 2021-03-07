@@ -50,8 +50,6 @@ class MergeSolr(object):
         :param mongo_filter: Filtro Mongo para selecionar parte dos identificadores
         :return: Identificadores hash das citações a serem mescladas
         """
-        logging.info('Getting cited references identifiers... [filter=%s]' % mongo_filter)
-
         ids_for_merging = []
 
         for j in self.mongo.find(mongo_filter):
@@ -62,9 +60,6 @@ class MergeSolr(object):
                 'citing_docs': j['citing_docs']
             }
 
-            # Caso base de de-duplicação seja issue, mantem na citação principal o melhor valor de issue
-            if self.cit_hash_base == 'article_issue':
-                item.update({'cit_issue': j['cit_keys']['cleaned_issue']})
 
             # Caso base de de-duplicação seja start_page, mantem na citação principal o melhor valor de start_page
             if self.cit_hash_base == 'article_start_page':
