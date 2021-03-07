@@ -135,9 +135,9 @@ def mount_citation_id(citation: Citation, collection_acronym):
     return cit_full_id
 
 
-def hash_keys(cit_data, keys):
+def gen_key(cit_data, keys):
     """
-    Cria um codigo hash dos dados de uma citação, com base na lista de keys.
+    Cria um codigo dos dados de uma citação, com base na lista de keys.
 
     :param cit_data: Dicionário de pares de nome de campo e valor de campo de citação
     :param keys: Nomes dos campos a serem considerados para formar o codigo hash
@@ -145,16 +145,13 @@ def hash_keys(cit_data, keys):
     """
     data = []
     for k in keys:
-        if k in cit_data:
-            if cit_data[k]:
-                data.append(k + cit_data[k])
-            else:
-                return
+        if k in cit_data and cit_data[k]:
+            data.append(cit_data[k])
         else:
-            return
+            return ''
 
     if data:
-        return sha3_224(''.join(data).encode()).hexdigest()
+        return '|'.join(data)
 
 
 def extract_citations_ids_keys(document: Article, standardizer):
@@ -175,16 +172,6 @@ def extract_citations_ids_keys(document: Article, standardizer):
             if cit.publication_type == 'article':
                 cit_standardized_data = standardizer.find_one({'_id': cit_full_id, 'status': {'$gt': 0}})
                 cit_data = extract_citation_data(cit, cit_standardized_data)
-
-                for extra_key in ['volume', 'start_page', 'issue']:
-                    keys_i = ARTICLE_KEYS + ['cleaned_' + extra_key]
-
-                    article_hash_i = hash_keys(cit_data, keys_i)
-                    if article_hash_i:
-                        citations_ids_keys.append((cit_full_id,
-                                                   {k: cit_data[k] for k in keys_i if k in cit_data},
-                                                   article_hash_i,
-                                                   'article_' + extra_key))
 
             else:
                 cit_data = extract_citation_data(cit)
@@ -215,7 +202,7 @@ def convert_to_mongodoc(data):
     :param data: Dados a serem convertidos (lista de quadras no formato: id de citacao, dados de citação, hash, base)
     :return: Dados convertidos
     """
-    mgdocs = {'article_issue': {}, 'article_start_page': {}, 'article_volume': {}, 'book': {}, 'chapter': {}}
+    mgdocs = {'article': {}, 'book': {}, 'chapter': {}}
 
     for doc_id, citations_data in [d for d in data if d]:
         for cit in citations_data:
