@@ -218,7 +218,7 @@ class MergeSolr(object):
                     updated_doc = {}
                     updated_doc['entity'] = 'document'
                     updated_doc['id'] = doc['id']
-                    updated_doc['citation_fk'] = {'remove': list(ids_for_removing), 'add': merged_citation['id']}
+                    updated_doc['citation_fk'] = {'remove': list(ids_for_removing), 'add-distinct': merged_citation['id']}
 
                     docs_for_updating.append(updated_doc)
 
