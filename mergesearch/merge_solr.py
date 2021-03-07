@@ -61,11 +61,6 @@ class MergeSolr(object):
             }
 
 
-
-            # Caso base de de-duplicação seja volume, mantem na citação principal o melhor valor de volume
-            if self.cit_hash_base == 'article_volume':
-                item.update({'cit_volume': j['cit_keys']['cleaned_volume']})
-
             ids_for_merging.append(item)
 
         logging.info('There are %d cited references identifiers to be merged.' % len(ids_for_merging))
