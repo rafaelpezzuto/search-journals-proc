@@ -258,24 +258,8 @@ def main():
     parser = argparse.ArgumentParser(textwrap.dedent(usage))
 
     parser.add_argument(
-        '--mongo_uri',
-        default=None,
-        required=True,
-        dest='mongo_uri',
-        help='String de conexão a base Mongo que contem códigos identificadores de citações de-duplicadas. '
-             'Usar o formato: mongodb://[username]:[password]@[host1]:[port1]/[database].[collection].'
-    )
-
-    parser.add_argument(
-        '-b', '--cit_hash_base',
-        required=True,
-        choices=['article_issue', 'article_start_page', 'article_volume', 'book', 'chapter'],
-        help='Nome da base de chaves de de-duplicação de citações'
-    )
-
-    parser.add_argument(
         '-f', '--from_date',
-        help='Obtém apenas as chaves cuja data de atualização é a partir da data especificada (use o formato YYYY-MM-DD)'
+        help='Obtém apenas as chaves cuja data de atualização é >= que a data especificada (use o formato YYYY-MM-DD)'
     )
 
     parser.add_argument(
@@ -297,30 +281,25 @@ def main():
 
     logging.basicConfig(level=args.logging_level)
 
-    if args.from_date:
-        mongo_filter = {'update_date': {'$gte': args.from_date}}
-    else:
-        mongo_filter = {}
-
-    mongo_database_name = uri_parser.parse_uri(args.mongo_uri).get('database')
-    mongo_collection_name = uri_parser.parse_uri(args.mongo_uri).get('collection')
-    if not mongo_collection_name:
-        mongo_collection_name = args.cit_hash_base
-    try:
-        mongo = MongoClient(args.mongo_uri).get_database(mongo_database_name).get_collection(mongo_collection_name)
-    except ConnectionError as ce:
-        logging.error(ce)
-        exit(1)
-
     os.makedirs('merges', exist_ok=True)
 
-    solr = SolrAPI.Solr(SOLR_URL, timeout=100)
+    for gc in MONGO_GOLD_COLLECTIONS:
+        logging.info('Collecting data from %s...' % gc)
 
-    merger = MergeSolr(cit_hash_base=args.cit_hash_base,
-                       solr=solr,
-                       mongo=mongo,
-                       persist_on_solr=args.persist_on_solr)
+        mongo = get_mongo_connection(MONGO_URI_CITATIONS, gc)
 
-    deduplicated_citations = merger.get_ids_for_merging(mongo_filter)
-    if deduplicated_citations:
-        merger.merge_citations(deduplicated_citations)
+        solr = SolrAPI.Solr(SOLR_URL, timeout=100)
+        merger = MergeSolr(gold_citation_type=gc,
+                           solr=solr,
+                           mongo=mongo,
+                           persist_on_solr=args.persist_on_solr)
+
+        if args.from_date:
+            mongo_filter = {'update_date': {'$gte': args.from_date}}
+        else:
+            mongo_filter = {}
+
+        deduplicated_citations = merger.get_ids_for_merging(mongo_filter)
+        if deduplicated_citations:
+            merger.merge_citations(deduplicated_citations)
+
