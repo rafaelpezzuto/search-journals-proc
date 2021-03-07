@@ -1,4 +1,4 @@
-from mergesearch.utils.string_processor import preprocess_author_name, preprocess_default, preprocess_journal_title
+from utils.string_processor import preprocess_author_name, preprocess_default, preprocess_journal_title
 
 
 def get_cleaned_default(field_value: str):

@@ -67,6 +67,7 @@ def remove_period(text):
             text = text[:-1]
         return text
 
+
 def remove_accents(text):
     if not text:
         return ''
@@ -76,6 +77,7 @@ def remove_accents(text):
             return cleaned_text
         else:
             return ''
+
 
 def keep_alpha_digit(text):
     cleaned_text = []
