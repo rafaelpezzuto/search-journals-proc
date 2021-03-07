@@ -9,8 +9,12 @@ sys.path.append(os.getcwd())
 from datetime import datetime
 from utils.database import get_mongo_connection
 
-SOLR_URL = os.environ.get('SOLR_URL', 'http://localhost:8983/solr/articles')
+
+SOLR_URL = os.environ.get('SOLR_URL', 'http://172.18.0.4:8983/solr/articles')
 SOLR_ROWS_LIMIT = os.environ.get('SOLR_ROWS_LIMIT', 10000)
+MONGO_URI_NORMALIZED_JOURNALS = os.environ.get('MONGO_URI_NORMALIZED_JOURNALS', 'mongodb://127.0.0.1:27017/citations.standardized')
+MONGO_URI_CITATIONS = os.environ.get('MONGO_URI_CITATIONS', 'mongodb://127.0.0.1:27017/citations')
+MONGO_GOLD_COLLECTIONS = os.environ.get('MONGO_GOLD_COLLECTIONS', 'gold_article,gold_book,gold_chapter').split(',')
 
 
 class MergeSolr(object):
