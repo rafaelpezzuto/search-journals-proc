@@ -19,8 +19,6 @@ from updatesearch import pipeline_xml, citation_pipeline_xml
 from utils.database import get_mongo_connection
 
 
-MONGO_STDCITS_COLLECTION = os.environ.get('MONGO_STDCITS_COLLECTION', 'standardized')
-
 logger = logging.getLogger(__name__)
 
 SOLR_URL = os.environ.get('SOLR_URL', 'http://127.0.0.1/solr')
@@ -63,6 +61,8 @@ if SENTRY_HANDLER:
         'dsn': SENTRY_HANDLER,
     }
     LOGGING['loggers']['']['handlers'].append('sentry')
+MONGO_URI_NORMALIZED_JOURNALS = os.environ.get('MONGO_URI_NORMALIZED_JOURNALS', 'mongodb://127.0.0.1:27017/citations.standardized')
+SOLR_URL = os.environ.get('SOLR_URL', 'http://172.18.0.4:8983/solr/articles')
 
 
 class UpdateSearch(object):
