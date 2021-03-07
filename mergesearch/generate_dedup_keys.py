@@ -166,17 +166,23 @@ def extract_citations_ids_keys(document: Article, standardizer):
     citations_ids_keys = []
 
     if document.citations:
-        for cit in [c for c in document.citations if c.publication_type in citation_types]:
+        for cit in [c for c in document.citations if c.publication_type in CITATION_TYPES]:
             cit_full_id = mount_citation_id(cit, document.collection_acronym)
 
             if cit.publication_type == 'article':
                 cit_standardized_data = standardizer.find_one({'_id': cit_full_id, 'status': {'$gt': 0}})
                 cit_data = extract_citation_data(cit, cit_standardized_data)
 
+                article_hash = gen_key(cit_data, ARTICLE_KEYS)
+                if article_hash:
+                    citations_ids_keys.append((cit_full_id,
+                                               {k: cit_data[k] for k in ARTICLE_KEYS if k in cit_data},
+                                               article_hash,
+                                               'article'))
             else:
                 cit_data = extract_citation_data(cit)
 
-                book_hash = hash_keys(cit_data, BOOK_KEYS)
+                book_hash = gen_key(cit_data, BOOK_KEYS)
                 if book_hash:
                     citations_ids_keys.append((cit_full_id,
                                                {k: cit_data[k] for k in BOOK_KEYS if k in cit_data},
@@ -185,7 +191,7 @@ def extract_citations_ids_keys(document: Article, standardizer):
 
                     chapter_keys = BOOK_KEYS + ['cleaned_chapter_title', 'cleaned_chapter_first_author']
 
-                    chapter_hash = hash_keys(cit_data, chapter_keys)
+                    chapter_hash = gen_key(cit_data, chapter_keys)
                     if chapter_hash:
                         citations_ids_keys.append((cit_full_id,
                                                    {k: cit_data[k] for k in chapter_keys if k in cit_data},
@@ -230,7 +236,8 @@ def persist_on_mongo(data):
     mongo_data = convert_to_mongodoc(data)
 
     for k, v in mongo_data.items():
-        writer = get_mongo_connection(mongo_uri_scielo_search, DEDUPLICATED_CITATIONS_PREFIX + k)
+        mongo_uri_ch_collection = MONGO_URI_CITATION_HASH + '.' + DEDUPLICATED_CITATIONS_PREFIX + k
+        writer = get_mongo_connection(mongo_uri_ch_collection)
 
         operations = []
         for cit_sha3_256 in v:
