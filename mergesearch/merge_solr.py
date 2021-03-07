@@ -20,12 +20,12 @@ MONGO_GOLD_COLLECTIONS = os.environ.get('MONGO_GOLD_COLLECTIONS', 'gold_article,
 class MergeSolr(object):
 
     def __init__(self,
-                 cit_hash_base,
+                 gold_citation_type,
                  solr,
                  mongo,
                  persist_on_solr=False):
 
-        self.cit_hash_base = cit_hash_base
+        self.gold_citation_type = gold_citation_type
         self.solr = solr
         self.mongo = mongo
         self.persist_on_solr = persist_on_solr
@@ -38,7 +38,7 @@ class MergeSolr(object):
         :param filename: Nome do arquivo JSON
         """
         str_time = datetime.utcnow().isoformat(sep='_', timespec='milliseconds')
-        filepath = '-'.join([self.cit_hash_base, filename, str_time]) + '.json'
+        filepath = '-'.join([self.gold_citation_type, filename, str_time]) + '.json'
 
         with open(os.path.join('merges', filepath), 'w') as f:
             f.write(data)
