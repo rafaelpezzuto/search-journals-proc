@@ -83,33 +83,37 @@ class MergeSolr(object):
 
             # Mescla informação de documentos citantes
             primary_citation['document_fk'].extend(raw_cit['document_fk'])
-            primary_citation['document_fk'] = list(set(primary_citation['document_fk']))
 
             # Mescla informação de coleções citantes
             primary_citation['in'].extend(raw_cit['in'])
-            primary_citation['in'] = list(set(primary_citation['in']))
 
             # Mescla informação de autores citantes
             if 'document_fk_au' in raw_cit:
                 if 'document_fk_au' not in primary_citation:
                     primary_citation['document_fk_au'] = []
                 primary_citation['document_fk_au'].extend(raw_cit['document_fk_au'])
-                primary_citation['document_fk_au'] = list(set(primary_citation['document_fk_au']))
 
             # Mescla informação de periódicos citantes
             if 'document_fk_ta' in raw_cit:
                 if 'document_fk_ta' not in primary_citation:
                     primary_citation['document_fk_ta'] = []
                 primary_citation['document_fk_ta'].extend(raw_cit['document_fk_ta'])
-                primary_citation['document_fk_ta'] = list(set(primary_citation['document_fk_ta']))
 
             # Obtém ids das citações que devem ser removidas dos documentos citantes e do Solr
             ids_for_removing.add(raw_cit['id'])
+
+        # Remove informações duplicadas
+        self._remove_duplicated_data(primary_citation)
 
         # Calcula número de citações recebidas
         primary_citation['total_received'] = str(len(primary_citation['document_fk']))
 
         return ids_for_removing
+
+    def _remove_duplicated_data(self, data: dict):
+        for k in ['in', 'document_fk', 'document_fk_au', 'document_fk_ta']:
+            if k in data:
+                data[k] = sorted(set(data[k]))
 
     def request_docs(self, ids):
         """
@@ -179,7 +183,7 @@ class MergeSolr(object):
 
         :param deduplicated_citations: Códigos hashes contendo ids de citações a serem mescladas
         """
-        logging.info('Merging cited references (Solr documents)...')
+        logging.info('Merging...')
 
         cits_for_merging = []
         docs_for_updating = []
@@ -187,7 +191,7 @@ class MergeSolr(object):
 
         total_citations = len(deduplicated_citations)
         for counter, dc in enumerate(deduplicated_citations):
-            logging.info('%d of %d' % (counter, total_citations))
+            logging.debug('%d of %d' % (counter, total_citations))
 
             cit_full_ids = dc['cit_full_ids']
             citing_docs = dc['citing_docs']
@@ -201,17 +205,10 @@ class MergeSolr(object):
                 merged_citation = {}
                 merged_citation.update(citations[0])
 
-                if self.cit_hash_base == 'articles_start_page':
-                    merged_citation['start_page'] = dc['cit_start_page']
-                elif self.cit_hash_base == 'articles_volume':
-                    merged_citation['volume'] = dc['cit_volume']
-                elif self.cit_hash_base == 'articles_issue':
-                    merged_citation['issue'] = dc['cit_issue']
-                    
                 if '_version_' in merged_citation:
                     del merged_citation['_version_']
 
-                ids_for_removing = self.merge_citation(merged_citation, citations[1:])
+                ids_for_removing = self._merge_citation_data(merged_citation, citations[1:])
                 cits_for_merging.append(merged_citation)
 
                 response_documents = self.request_docs(citing_docs)
