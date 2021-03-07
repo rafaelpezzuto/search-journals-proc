@@ -79,9 +79,7 @@ class UpdateSearch(object):
                  delete=False,
                  differential=False,
                  load_indicators=False,
-                 include_cited_references=False,
-                 load_standardized_cited_references=False,
-                 mongo_uri_std_cits=None):
+                 load_cited_references=False):
         self.delete = delete
         self.collection = collection
         self.from_date = from_date
@@ -90,21 +88,13 @@ class UpdateSearch(object):
         self.load_indicators = load_indicators
         self.issn = issn
         self.solr = Solr(SOLR_URL, timeout=10)
+        self.load_cited_references = load_cited_references
 
         if period:
             self.from_date = datetime.now() - timedelta(days=period)
 
-        self.include_cited_references = include_cited_references
-
-        if load_standardized_cited_references and mongo_uri_std_cits:
-            try:
-                mongo_col = uri_parser.parse_uri(mongo_uri_std_cits).get('collection')
-                if not mongo_col:
-                    mongo_col = MONGO_STDCITS_COLLECTION
-                self.standardizer = MongoClient(mongo_uri_std_cits).get_database().get_collection(mongo_col)
-            except ConnectionError as e:
-                logging.error('ConnectionError %s' % mongo_uri_std_cits)
-                logging.error(e)
+        if self.load_cited_references:
+            self.cited_journal_normalizer = get_mongo_connection(MONGO_URI_NORMALIZED_JOURNALS)
 
     def format_date(self, date):
         """
@@ -182,7 +172,7 @@ class UpdateSearch(object):
 
         add = ET.Element('add')
 
-        if self.include_cited_references:
+        if self.load_cited_references:
             article_pipeline_results = plumber.Pipeline(*pipeline_itens).run([article])
 
             cit_xmls, citations_fk_doc = self.get_xmls_citations(article)
@@ -248,10 +238,10 @@ class UpdateSearch(object):
             citation_pipeline_xml.Collection(document.collection_acronym)
         ]
 
-        if hasattr(self, 'standardizer'):
+        if hasattr(self, 'cited_journal_normalizer'):
             # Pipe para adicionar no <doc> citation dados normalizados
             ppl_citation_itens.append(
-                citation_pipeline_xml.ExternalMetaData(self.standardizer, document.collection_acronym))
+                citation_pipeline_xml.ExternalMetaData(self.cited_journal_normalizer, document.collection_acronym))
 
         ppl_citation = plumber.Pipeline(*ppl_citation_itens)
 
@@ -270,9 +260,9 @@ class UpdateSearch(object):
         # Pipeline para adicionar no <doc> do artigo dados das referências citadas
         ppl_citation_fk_itens = [pipeline_xml.SetupDocument()]
 
-        if hasattr(self, 'standardizer'):
+        if hasattr(self, 'cited_journal_normalizer'):
             # Com metadados externos
-            ppl_citation_fk_itens.append(pipeline_xml.CitationsFKData(self.standardizer))
+            ppl_citation_fk_itens.append(pipeline_xml.CitationsFKData(self.cited_journal_normalizer))
         else:
             # Sem metadados externos
             ppl_citation_fk_itens.append(pipeline_xml.CitationsFKData())
@@ -530,27 +520,12 @@ def main():
     )
 
     parser.add_argument(
-        '--include_cited_references',
+        '--load_cited_references',
         '-r',
-        action='store_true',
-        help='include cited references in the indexing process'
-    )
-
-    parser.add_argument(
-        '--load_std_cits',
         default=False,
         action='store_true',
-        dest='load_std_cits',
-        help='load standardized cited references from a mongo database'
+        help='Load cited references'
     )
-
-    parser.add_argument(
-        '--mongo_uri',
-        default=None,
-        dest='mongo_uri_std_cits',
-        help='mongo uri string in the format mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]'
-    )
-
 
     args = parser.parse_args()
     LOGGING['handlers']['console']['level'] = args.logging_level
@@ -571,9 +546,7 @@ def main():
             delete=args.delete,
             differential=args.differential,
             load_indicators=args.load_indicators,
-            include_cited_references=args.include_cited_references,
-            load_standardized_cited_references=args.load_std_cits,
-            mongo_uri_std_cits=args.mongo_uri_std_cits
+            load_cited_references=args.load_cited_references
         )
         us.run()
     except KeyboardInterrupt:
