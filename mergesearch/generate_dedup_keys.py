@@ -271,8 +271,8 @@ def parallel_extract_citations_ids_keys(doc_id):
 
     :param doc_id: PID do documento cuja lista de referências citadas será processada
     """
-    standardizer = get_mongo_connection(mongo_uri_scielo_search, COLLECTION_STANDARDIZED)
-    article_meta = get_mongo_connection(mongo_uri_article_meta)
+    standardizer = get_mongo_connection(MONGO_URI_STANDARDIZED)
+    article_meta = get_mongo_connection(MONGO_URI_ARTICLEMETA)
 
     raw = article_meta.find_one({'_id': doc_id})
     doc = Article(raw)
@@ -327,10 +327,10 @@ def main():
     total_docs = len(docs_ids)
 
     end = time.time()
-    logging.info('\tThere are %d articles to be readed' % total_docs)
-    logging.info('\tDone after %.2f seconds' % (end - start))
+    logging.info('There are %d articles to be readed' % total_docs)
+    logging.info('Done after %.2f seconds' % (end - start))
 
-    logging.info('[2] Generating keys...')
+    logging.info('Generating keys...')
     start = time.time()
 
     chunks = range(0, total_docs, chunk_size)
@@ -339,11 +339,12 @@ def main():
         if slice_end > total_docs:
             slice_end = total_docs
 
-        logging.info('\t%d to %d' % (slice_start, slice_end))
+        logging.info('%d to %d' % (slice_start, slice_end))
         with Pool(os.cpu_count()) as p:
             results = p.map(parallel_extract_citations_ids_keys, docs_ids[slice_start:slice_end])
 
         persist_on_mongo(results)
 
     end = time.time()
-    logging.info('\tDone after %.2f seconds' % (end - start))
+    logging.info('Done after %.2f seconds' % (end - start))
+
