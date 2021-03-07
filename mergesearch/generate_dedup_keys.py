@@ -289,21 +289,18 @@ def main():
 
     parser.add_argument(
         '-f', '--from_date',
-        help='Obtém apenas os PIDs de artigos publicados a partir da data especificada (use o formato YYYY-MM-DD)'
+        type=lambda x: datetime.strptime(x, '%Y-%m-%d'),
+        default=(datetime.now() - timedelta(days=7)),
+        help='Obtém apenas os PIDs de artigos publicados a partir da data especificada (use o formato YYYY-MM-DD).'
+             ' Valor padrão é o dia de uma semana atrás.'
     )
 
     parser.add_argument(
-        '-b', '--book',
-        action='store_true',
-        default=None,
-        help='Obtém chaves para livros ou capítulos de livros citados'
-    )
-
-    parser.add_argument(
-        '-a', '--article',
-        action='store_true',
-        default=None,
-        help='Obtém chaves para artigos citados'
+        '-u', '--until_date',
+        type=lambda x: datetime.strptime(x, '%Y-%m-%d'),
+        default=datetime.now(),
+        help='Obtém apenas os PIDs de artigos publicados até a data especificada (use o formato YYYY-MM-DD).'
+             ' Valor padrão é a dia de hoje.'
     )
 
     parser.add_argument(
@@ -311,53 +308,19 @@ def main():
         help='Tamanho de cada slice Mongo'
     )
 
-    parser.add_argument(
-        '--mongo_uri_article_meta',
-        required=True,
-        help='String de conexão a base Mongo do ArticleMeta. '
-             'Usar o formato: mongodb://[username]:[password]@[host1]:[port1]/[database].[collection].'
-    )
-
-    parser.add_argument(
-        '--mongo_uri_scielo_search',
-        default=None,
-        help='String de conexão a base Mongo scielo_search. '
-             'Usar o formato: mongodb://[username]:[password]@[host1]:[port1]/[database].'
-    )
+    logging.basicConfig(level=logging.INFO)
 
     args = parser.parse_args()
 
-    global citation_types
     global chunk_size
-    global mongo_uri_scielo_search
-    global mongo_uri_article_meta
-
-    if args.from_date:
-        mongo_filter = {'processing_date': {'$gte': args.from_date}}
-    else:
-        mongo_filter = {}
-
-    if args.book:
-        citation_types.add('book')
-    if args.article:
-        citation_types.add('article')
-
     if args.chunk_size and args.chunk_size.isdigit() and int(args.chunk_size) > 0:
         chunk_size = int(args.chunk_size)
 
-    if args.mongo_uri_scielo_search:
-        mongo_uri_scielo_search = args.mongo_uri_scielo_search
+    mongo_filter = {'$and': [{'processing_date': {'$gte': args.from_date}},
+                             {'processing_date': {'$lte': args.until_date}}]}
 
-    if args.mongo_uri_article_meta:
-        mongo_uri_article_meta = args.mongo_uri_article_meta
-
-    logging.basicConfig(level=logging.INFO)
-
-    logging.info('[Settings] citation types: %s, chunk size: %d, mongo filter: %s' % (citation_types, chunk_size, mongo_filter))
-
-    article_meta = get_mongo_connection(mongo_uri_article_meta)
-
-    logging.info('Getting articles\' identifiers')
+    article_meta = get_mongo_connection(MONGO_URI_ARTICLEMETA)
+    logging.info('Getting articles ids...')
     start = time.time()
 
     docs_ids = [x['_id'] for x in article_meta.find(mongo_filter, {'_id': 1})]
