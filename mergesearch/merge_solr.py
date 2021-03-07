@@ -60,10 +60,10 @@ class MergeSolr(object):
                 'citing_docs': j['citing_docs']
             }
 
+            if len(item['cit_full_ids']) > 1:
+                ids_for_merging.append(item)
 
-            ids_for_merging.append(item)
-
-        logging.info('There are %d cited references identifiers to be merged.' % len(ids_for_merging))
+        logging.info('There are data of %d cited references.' % len(ids_for_merging))
 
         return ids_for_merging
 
