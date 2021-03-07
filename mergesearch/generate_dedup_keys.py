@@ -34,27 +34,6 @@ CITATION_TYPES = ('book', 'article')
 
 chunk_size = 2000
 
-def get_mongo_connection(mongo_uri, collection=None):
-    """
-    Obtém uma conexão com o MongoDB.
-
-    :param mongo_uri: String de conexão MongoDB
-    :param collection: Nome da coleção MongoDB
-    :return: Conexão com coleção MongoDB
-    """
-    try:
-        if collection:
-            return MongoClient(mongo_uri, maxPoolSize=None).get_database().get_collection(collection)
-        else:
-            mongo_collection_name = uri_parser.parse_uri(mongo_uri).get('collection')
-            if mongo_collection_name:
-                return MongoClient(mongo_uri, maxPoolSize=None).get_database().get_collection(mongo_collection_name)
-            else:
-                return MongoClient(mongo_uri, maxPoolSize=None).get_database()
-    except ConnectionError as ce:
-        logging.error(ce)
-        exit(1)
-
 
 def _extract_citation_fields_by_list(citation: Citation, fields):
     """
